@@ -1,0 +1,20 @@
+{
+  "name": "ailari-backend",
+  "version": "3.0.0",
+  "type": "module",
+  "main": "ailari-server.js",
+  "scripts": {
+    "start": "node ailari-server.js"
+  },
+  "dependencies": {
+    "better-sqlite3": "^9.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.0.0",
+    "express": "^4.18.0",
+    "express-rate-limit": "^7.0.0",
+    "uuid": "^9.0.0"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
