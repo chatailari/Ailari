@@ -1,0 +1,1240 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#06060a">
+<meta name="ailari-build-id" content="base">
+<meta name="ailari-version" content="4.2">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="application-name" content="Ailari">
+<meta name="description" content="Sistema cognitivo personal de Diego">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<title>Ailari</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#06060a;--sur:#0e0e14;--sur2:#13131c;--bor:#1c1c28;--acc:#c8a97e;--text:#ddd8d0;--mut:#4a4a5e;--mut2:#6a6a7e;--user-bg:#141420;--ai-bg:#0e0e14;--deep:#7c6fcd;--ok:#5a9e7a;--mem:#c8a97e;--warn:#e8b84b}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;overflow:hidden}
+#app{display:flex;flex-direction:column;height:100vh;height:100dvh}
+.hdr{padding:13px 18px 10px;border-bottom:1px solid var(--bor);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.hdr-name{font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:700;color:var(--acc);letter-spacing:-.5px}
+.hdr-r{display:flex;align-items:center;gap:9px}
+.mpill{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;padding:4px 10px;border-radius:99px;border:1px solid var(--bor);color:var(--mut2);transition:all .3s}
+.mpill.deep{border-color:var(--deep);color:var(--deep)}
+.sdot{width:7px;height:7px;border-radius:50%;background:var(--ok);flex-shrink:0;transition:background .3s}
+.sdot.busy{background:var(--acc);animation:pulse .8s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.hbtn{width:30px;height:30px;border-radius:8px;background:var(--sur);border:1px solid var(--bor);color:var(--mut2);font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.tabs{display:flex;border-bottom:1px solid var(--bor);flex-shrink:0}
+.tab{flex:1;padding:9px 0;font-size:10px;text-align:center;font-family:'DM Mono',monospace;letter-spacing:1.5px;text-transform:uppercase;color:var(--mut);cursor:pointer;border-bottom:1px solid transparent;transition:all .2s}
+.tab.on{color:var(--acc);border-bottom-color:var(--acc)}
+.msgs{flex:1;overflow-y:auto;padding:16px 16px 8px;display:flex;flex-direction:column;gap:14px;-webkit-overflow-scrolling:touch}
+.empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 24px;text-align:center;gap:12px}
+.empty-name{font-family:'Cormorant Garamond',serif;font-size:36px;font-weight:600;color:var(--bor);letter-spacing:-1px}
+.empty-desc{font-size:12px;color:var(--mut);line-height:1.7;max-width:240px}
+.msg{display:flex;flex-direction:column;gap:5px;animation:si .25s ease}
+@keyframes si{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.msg.user{align-items:flex-end}.msg.ai{align-items:flex-start}
+.bubble{max-width:88%;padding:12px 15px;border-radius:16px;font-size:14px;line-height:1.65;word-break:break-word}
+.msg.user .bubble{background:var(--user-bg);border:1px solid var(--bor);border-bottom-right-radius:4px}
+.bubble img{max-width:100%;border-radius:8px;margin-top:6px;display:block}
+.msg.ai .bubble{background:var(--ai-bg);border:1px solid var(--bor);border-bottom-left-radius:4px}
+.msg-meta{display:flex;align-items:center;gap:6px;padding:0 4px;font-family:'DM Mono',monospace;font-size:9px;color:var(--mut);flex-wrap:wrap}
+.mbadge{padding:2px 7px;border-radius:99px;font-size:8px;letter-spacing:1px}
+.mbadge.deep{background:rgba(124,111,205,.12);color:var(--deep)}
+.mbadge.ia{background:rgba(90,158,122,.08);color:var(--ok)}
+.thinking-b{background:var(--ai-bg);border:1px solid var(--bor);border-radius:16px;border-bottom-left-radius:4px;padding:13px 16px;display:flex;align-items:center;gap:10px;font-size:12px;color:var(--mut2);font-style:italic}
+.tdots{display:flex;gap:5px}
+.tdots span{width:5px;height:5px;border-radius:50%;background:var(--acc);animation:bo 1.2s infinite}
+.tdots span:nth-child(2){animation-delay:.2s}.tdots span:nth-child(3){animation-delay:.4s}
+@keyframes bo{0%,100%{opacity:.2;transform:scale(.8)}50%{opacity:1;transform:scale(1)}}
+.msg-actions{display:flex;gap:6px;padding:0 2px;flex-wrap:wrap}
+.abtn{padding:5px 11px;border-radius:99px;font-size:10px;font-family:'DM Mono',monospace;letter-spacing:.5px;cursor:pointer;border:1px solid var(--bor);background:transparent;color:var(--mut2);transition:all .15s;text-transform:uppercase}
+.abtn.save{border-color:var(--mem);color:var(--mem)}.abtn.save.done{border-color:var(--ok);color:var(--ok);opacity:.7}
+.abtn.decide{border-color:var(--ok);color:var(--ok)}.abtn.decide.done{opacity:.5;cursor:default}
+.abtn.trio{border-color:var(--deep);color:var(--deep)}
+#moverlay{position:fixed;inset:0;background:rgba(6,6,10,.88);z-index:300;display:none;align-items:flex-end}
+#moverlay.open{display:flex}
+.modal{width:100%;background:var(--sur);border-top:1px solid var(--bor);border-radius:20px 20px 0 0;padding:24px 20px 36px;display:flex;flex-direction:column;gap:14px;animation:su .25s ease}
+@keyframes su{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.modal-title{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:600;color:var(--acc)}
+.modal-inp{background:var(--bg);border:1px solid var(--bor);color:var(--text);padding:12px 14px;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:14px;outline:none;resize:none;min-height:80px;width:100%;line-height:1.5}
+.modal-inp:focus{border-color:var(--acc)}
+.modal-lbl{font-size:11px;color:var(--mut2)}
+.modal-tags{background:var(--bg);border:1px solid var(--bor);color:var(--text);padding:9px 12px;border-radius:8px;font-size:12px;outline:none;width:100%;font-family:'DM Mono',monospace}
+.modal-btns{display:flex;gap:10px}
+.mcancel{flex:1;padding:12px;border-radius:10px;background:transparent;border:1px solid var(--bor);color:var(--mut2);font-size:14px;cursor:pointer}
+.mconfirm{flex:2;padding:12px;border-radius:10px;background:var(--acc);border:none;color:var(--bg);font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:600;cursor:pointer}
+#memPane{flex:1;overflow-y:auto;padding:14px;display:none;flex-direction:column;gap:10px}
+#memPane.on{display:flex}
+.mcard{background:var(--sur);border:1px solid var(--bor);border-radius:12px;padding:14px}
+.mcard-tipo{font-family:'DM Mono',monospace;font-size:8px;text-transform:uppercase;letter-spacing:1.5px;color:var(--mut);margin-bottom:6px}
+.mcard-tipo.decision{color:var(--ok)}
+.mcard-text{font-size:13px;color:var(--text);line-height:1.6;margin-bottom:8px}
+.mcard-meta{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px}
+.mcard-date{font-size:10px;color:var(--mut);font-family:'DM Mono',monospace}
+.mcard-tags{display:flex;gap:5px;flex-wrap:wrap}
+.mtag{font-size:9px;padding:2px 7px;border-radius:99px;background:rgba(200,169,126,.1);color:var(--mem);letter-spacing:1px;text-transform:uppercase;font-family:'DM Mono',monospace}
+.mempty{flex:1;display:flex;align-items:center;justify-content:center;color:var(--mut);font-size:12px;font-family:'DM Mono',monospace}
+.mem-toolbar{display:flex;gap:8px;padding:0 0 8px;flex-wrap:wrap}
+.mem-tbtn{padding:5px 12px;border-radius:99px;font-size:10px;font-family:'DM Mono',monospace;cursor:pointer;border:1px solid var(--bor);background:transparent;color:var(--mut2);transition:all .15s;text-transform:uppercase}
+
+.inp-area{padding:10px 14px 28px;border-top:1px solid var(--bor);background:var(--bg);flex-shrink:0}
+.mode-row{display:flex;gap:6px;padding:0 2px 8px}
+.mtbtn{padding:4px 12px;border-radius:99px;font-size:10px;font-family:'DM Mono',monospace;letter-spacing:1px;text-transform:uppercase;cursor:pointer;border:1px solid var(--bor);background:transparent;color:var(--mut);transition:all .15s}
+.mtbtn.on{border-color:var(--mut2);color:var(--mut2)}
+.mtbtn.deep-on{border-color:var(--deep);color:var(--deep)}
+.mtbtn.fast-on{border-color:var(--ok);color:var(--ok)}
+.mtbtn:disabled{opacity:.3;cursor:not-allowed}
+.inp-row{display:flex;gap:8px;align-items:flex-end}
+.inp{flex:1;background:var(--sur);border:1px solid var(--bor);color:var(--text);padding:12px 14px;border-radius:14px;font-family:'DM Sans',sans-serif;font-size:15px;outline:none;resize:none;min-height:48px;max-height:130px;line-height:1.5;transition:border-color .2s;-webkit-appearance:none}
+.inp:focus{border-color:var(--acc)}
+.inp::placeholder{color:var(--mut)}
+.sbtn{width:48px;height:48px;border-radius:14px;background:transparent;border:1px solid var(--acc);color:var(--acc);font-size:20px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.sbtn:active{background:var(--acc);color:var(--bg)}
+.sbtn:disabled{border-color:var(--bor);color:var(--mut)}
+.sbtn.recording{border-color:#e06060;color:#e06060;animation:pulse .8s infinite}
+.bubble-actions{display:flex;gap:4px;padding:6px 2px 2px;flex-wrap:wrap}
+.bact{width:34px;height:34px;border-radius:10px;background:var(--sur);border:1px solid var(--bor);color:var(--mut2);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0}
+.bact:active{background:var(--sur2);border-color:var(--acc);color:var(--acc)}
+.bact.liked{border-color:var(--ok);color:var(--ok)}
+.bact.disliked{border-color:#e06060;color:#e06060}
+.bact.speaking{border-color:var(--deep);color:var(--deep);animation:pulse .8s infinite}
+.err-b{background:rgba(180,60,60,.08);border:1px solid rgba(180,60,60,.2);border-radius:12px;padding:12px 14px;font-size:13px;color:#e06060;line-height:1.5}
+.toast{position:fixed;bottom:100px;left:50%;transform:translateX(-50%);background:var(--sur);border:1px solid var(--ok);color:var(--ok);padding:8px 18px;border-radius:99px;font-size:12px;font-family:'DM Mono',monospace;z-index:500;animation:fu .2s ease;pointer-events:none}
+@keyframes fu{from{opacity:0;transform:translateY(14px)translateX(-50%)}to{opacity:1;transform:translateY(0)translateX(-50%)}}
+</style>
+</head>
+<body>
+
+<div id="app">
+  <div class="hdr">
+    <div class="hdr-name">Ailari</div>
+    <div class="hdr-r">
+      <div class="mpill" id="mpill">auto</div>
+      <div class="sdot" id="sdot"></div>
+      <button class="hbtn" id="editToggle" title="Modo edición de código" style="font-size:11px;width:auto;padding:0 8px">✏ Edit</button>
+      <button class="hbtn" id="menuBtn">⚙</button>
+    </div>
+  </div>
+  <div class="tabs">
+    <div class="tab on" id="tabChat">Chat</div>
+    <div class="tab" id="tabMem">Memoria</div>
+  </div>
+  <div id="chatPane" style="display:flex;flex:1;flex-direction:column;overflow:hidden">
+    <div class="msgs" id="msgs">
+      <div class="empty" id="emptyState">
+        <div class="empty-name">Ailari</div>
+        <div class="empty-desc">Tu sistema cognitivo está listo.<br>Escríbeme lo que necesitas pensar o decidir.</div>
+      </div>
+    </div>
+
+    <div class="inp-area">
+      <div class="mode-row">
+        <button class="mtbtn on" id="mAuto">Auto</button>
+        <button class="mtbtn" id="mDeep">⚡ Profundo</button>
+        <button class="mtbtn" id="mFast">→ Rápido</button>
+      </div>
+      <div class="inp-row">
+        <button class="sbtn" id="imgBtn" title="Subir imagen" style="font-size:16px">📷</button>
+        <textarea class="inp" id="box" placeholder="¿Qué necesitas pensar?" rows="1"></textarea>
+        <button class="sbtn" id="micBtn" title="Hablar">🎤</button>
+        <button class="sbtn" id="snd">→</button>
+      </div>
+    </div>
+  </div>
+  <div id="memPane">
+    <div class="mem-toolbar">
+      <button class="mem-tbtn" id="exportBtn">↓ Export ligero</button>
+      <button class="mem-tbtn" id="exportFullBtn" style="border-color:var(--deep);color:var(--deep)">↓ Export completo</button>
+      <button class="mem-tbtn" id="importBtn">↑ Importar</button>
+    </div>
+    <div id="memList"></div>
+  </div>
+</div>
+
+<div id="moverlay" onclick="closeModal(event)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-title">Guardar en memoria</div>
+    <textarea class="modal-inp" id="memText" placeholder="¿Qué debe recordar Ailari?"></textarea>
+    <div class="modal-lbl">Tags (separados por coma)</div>
+    <input class="modal-tags" id="memTags" placeholder="clinica, decision, equipo...">
+    <div class="modal-btns">
+      <button class="mcancel" id="modalCancel">Cancelar</button>
+      <button class="mconfirm" id="modalConfirm">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<input type="file" id="importFile" accept=".json" style="display:none">
+<input type="file" id="imgFileInput" accept="image/*" capture="environment" style="display:none">
+<input type="file" id="codeFileInput" accept=".html,.js,.py,.json,.txt,.css" style="display:none">
+
+<!-- Panel de contexto de archivo para modo edición -->
+<div id="editPanel" style="display:none;position:fixed;inset:0;background:rgba(6,6,10,.92);z-index:400;align-items:flex-end">
+  <div style="width:100%;background:var(--sur);border-top:1px solid var(--deep);border-radius:20px 20px 0 0;padding:20px 18px 32px;display:flex;flex-direction:column;gap:12px;max-height:80vh;overflow-y:auto">
+    <div style="display:flex;align-items:center;justify-content:space-between">
+      <div style="font-family:Cormorant Garamond,serif;font-size:18px;color:var(--deep)">✏ Contexto de edición</div>
+      <button id="editPanelClose" style="background:transparent;border:none;color:var(--mut2);font-size:20px;cursor:pointer">×</button>
+    </div>
+    <div style="font-size:10px;color:var(--mut2);text-transform:uppercase;letter-spacing:1px">Nombre del archivo</div>
+    <input id="editFileName" placeholder="ej: ailari.html" style="background:var(--bg);border:1px solid var(--bor);color:var(--text);padding:10px 12px;border-radius:8px;font-family:DM Mono,monospace;font-size:12px;outline:none;width:100%">
+    <div style="display:flex;gap:8px">
+      <div style="font-size:10px;color:var(--mut2);text-transform:uppercase;letter-spacing:1px;flex:1">Código actual (pega el bloque a modificar)</div>
+      <button id="loadCodeFile" style="font-size:9px;font-family:DM Mono,monospace;padding:3px 8px;border-radius:6px;border:1px solid var(--bor);background:transparent;color:var(--mut2);cursor:pointer">↑ Cargar archivo</button>
+    </div>
+    <textarea id="editCodeCtx" placeholder="Pega aquí la función o bloque que quieres modificar..." style="background:var(--bg);border:1px solid var(--bor);color:var(--text);padding:10px 12px;border-radius:8px;font-family:DM Mono,monospace;font-size:11px;outline:none;resize:none;min-height:120px;width:100%;line-height:1.5;white-space:pre"></textarea>
+    <div style="font-size:10px;color:var(--mut2);text-transform:uppercase;letter-spacing:1px">Sección o función objetivo (opcional)</div>
+    <input id="editSection" placeholder="ej: función sendMsg() / sección INIT" style="background:var(--bg);border:1px solid var(--bor);color:var(--text);padding:10px 12px;border-radius:8px;font-family:DM Mono,monospace;font-size:12px;outline:none;width:100%">
+    <button id="editPanelConfirm" style="background:var(--deep);border:none;color:white;padding:13px;border-radius:10px;font-family:Cormorant Garamond,serif;font-size:16px;font-weight:600;cursor:pointer">Listo — pedir cambio</button>
+  </div>
+</div>
+
+<!-- Panel para aplicar parche -->
+<div id="patchPanel" style="display:none;position:fixed;inset:0;background:rgba(6,6,10,.92);z-index:400;align-items:flex-end">
+  <div style="width:100%;background:var(--sur);border-top:1px solid var(--ok);border-radius:20px 20px 0 0;padding:20px 18px 32px;display:flex;flex-direction:column;gap:12px;max-height:85vh;overflow-y:auto">
+    <div style="display:flex;align-items:center;justify-content:space-between">
+      <div style="font-family:Cormorant Garamond,serif;font-size:18px;color:var(--ok)">→ Aplicar cambio</div>
+      <button id="patchPanelClose" style="background:transparent;border:none;color:var(--mut2);font-size:20px;cursor:pointer">×</button>
+    </div>
+    <div style="font-size:10px;color:var(--mut2);text-transform:uppercase;letter-spacing:1px">Código generado por Ailari</div>
+    <textarea id="patchCode" style="background:var(--bg);border:1px solid var(--ok);color:var(--text);padding:10px 12px;border-radius:8px;font-family:DM Mono,monospace;font-size:11px;outline:none;resize:none;min-height:180px;width:100%;line-height:1.5;white-space:pre"></textarea>
+    <div id="patchNotice" style="font-size:11px;color:var(--mut);line-height:1.6"></div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <button id="patchCopy" style="flex:1;padding:12px;border-radius:10px;background:transparent;border:1px solid var(--ok);color:var(--ok);font-family:DM Mono,monospace;font-size:13px;cursor:pointer;min-width:120px">⧉ Copiar</button>
+      <button id="patchDownload" style="flex:1;padding:12px;border-radius:10px;background:transparent;border:1px solid var(--bor);color:var(--mut2);font-family:DM Mono,monospace;font-size:13px;cursor:pointer;min-width:120px">↓ Descargar</button>
+    </div>
+    <button id="patchApply" style="width:100%;padding:13px;border-radius:10px;background:var(--deep);border:none;color:white;font-family:Cormorant Garamond,serif;font-size:17px;font-weight:600;cursor:pointer">⚡ Actualizar Ailari con este código</button>
+    <button id="patchRestore" style="width:100%;padding:11px;border-radius:10px;background:transparent;border:1px solid #e06060;color:#e06060;font-family:DM Mono,monospace;font-size:12px;cursor:pointer">↩ Restaurar build estable</button>
+  </div>
+</div>
+
+<script>
+'use strict';
+
+// ── KEYS SEGURAS — viven en el celular, no en el código ──
+const KEYS = {
+  get groq()   { return localStorage.getItem('ailari_key_groq')   || ''; },
+  get gemini() { return localStorage.getItem('ailari_key_gemini') || ''; },
+  get github() { return localStorage.getItem('ailari_key_github') || ''; }
+};
+function saveKeys(k){
+  if(k.groq)   localStorage.setItem('ailari_key_groq',   k.groq.trim());
+  if(k.gemini) localStorage.setItem('ailari_key_gemini', k.gemini.trim());
+  if(k.github) localStorage.setItem('ailari_key_github', k.github.trim());
+}
+
+const CORE = {
+  nombre:'Ailari',
+  proposito:'Forzar a Diego a tomar decisiones correctas, eliminar errores y construir sistemas que funcionen sin su presencia.',
+  tono:'directa, crítica, sin suavizar. Prioriza resultados por sobre comodidad. Sin markdown, sin asteriscos, sin negritas.',
+  reglas:'No des respuestas genéricas. No hagas preguntas innecesarias. Baja siempre a acciones concretas para clínica dental. Señala errores sin suavizar. Si Diego pierde tiempo o evita decidir, dilo. Termina siempre con "Lo que tienes que hacer ahora:" seguido de 3 acciones concretas.',
+  contexto:'Diego: clínica dental en expansión. Objetivo: salir del sillón operativo y escalar sin depender de su presencia. Recursos limitados. Personal en desarrollo. Tiempo escaso.',
+  trigger_deep:['contratar','invertir','expandir','decidir','riesgo','plata','socio','despedir','cerrar','abrir','estrategia','negocio'],
+  trigger_edit:['modifica','cambia','agrega','elimina','arregla','corrige','actualiza','añade','borra','reemplaza']
+};
+
+// ── INDEXEDDB ──
+const DB = (() => {
+  let _db = null;
+  function open() {
+    return new Promise((res,rej) => {
+      if (_db) return res(_db);
+      const req = indexedDB.open('ailari_db',2);
+      req.onupgradeneeded = e => {
+        const db = e.target.result;
+        if (!db.objectStoreNames.contains('chats')) db.createObjectStore('chats',{keyPath:'id'}).createIndex('created_at','created_at');
+        if (!db.objectStoreNames.contains('memory')) db.createObjectStore('memory',{keyPath:'id'}).createIndex('created_at','created_at');
+        if (!db.objectStoreNames.contains('builds')) db.createObjectStore('builds',{keyPath:'id'}).createIndex('created_at','created_at');
+        if (!db.objectStoreNames.contains('patches')) db.createObjectStore('patches',{keyPath:'id'});
+        if (!db.objectStoreNames.contains('meta')) db.createObjectStore('meta',{keyPath:'key'});
+      };
+      req.onsuccess = e => { _db=e.target.result; res(_db); };
+      req.onerror = e => rej(e.target.error);
+    });
+  }
+  async function tx(store,mode,fn) {
+    const db=await open();
+    return new Promise((res,rej)=>{
+      const t=db.transaction(store,mode),s=t.objectStore(store),req=fn(s);
+      if(req&&req.onsuccess!==undefined){req.onsuccess=e=>res(e.target.result);req.onerror=e=>rej(e.target.error);}
+      else{t.oncomplete=()=>res();t.onerror=e=>rej(e.target.error);}
+    });
+  }
+  async function getAll(store) {
+    const db=await open();
+    return new Promise((res,rej)=>{
+      const req=db.transaction(store,'readonly').objectStore(store).openCursor(null,'prev');
+      const r=[];
+      req.onsuccess=e=>{const c=e.target.result;if(c){r.push(c.value);c.continue();}else res(r);};
+      req.onerror=e=>rej(e.target.error);
+    });
+  }
+  return {
+    putChat:r=>tx('chats','readwrite',s=>s.put(r)),
+    getChats:()=>getAll('chats'),
+    putMem:r=>tx('memory','readwrite',s=>s.put(r)),
+    getMems:()=>getAll('memory'),
+    putBuild:r=>tx('builds','readwrite',s=>s.put(r)),
+    getBuilds:()=>getAll('builds'),
+    getBuild:id=>tx('builds','readonly',s=>s.get(id)),
+    putPatch:r=>tx('patches','readwrite',s=>s.put(r)),
+    getPatches:()=>getAll('patches'),
+    setMeta:(key,value)=>tx('meta','readwrite',s=>s.put({key,value})),
+    getMeta:key=>tx('meta','readonly',s=>s.get(key)).then(r=>r?.value),
+    clearAll:async()=>{for(const s of['chats','memory','builds','patches','meta'])await tx(s,'readwrite',st=>st.clear());},
+    clearConversations:async()=>{
+      await tx('chats','readwrite',s=>s.clear());
+      await tx('memory','readwrite',s=>s.clear());
+    }
+  };
+})();
+
+// ── STATE ──
+const S = { mode:null, editMode:false, editContext:{}, chatHistory:[], memories:[], pendingSave:{} };
+const msgData = new Map();
+
+// ── UTILS ──
+const esc = s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+function fmt(text){
+  let t=text.replace(/\*\*(.*?)\*\*/g,'$1').replace(/\*(.*?)\*/g,'$1').replace(/^#{1,6}\s/gm,'');
+  return t.split('\n\n').map(p=>esc(p.trim()).replace(/\n/g,'<br>')).filter(p=>p).join('</p><p style="margin-top:10px">');
+}
+
+const genId = ()=>`${Date.now()}_${Math.random().toString(36).slice(2,6)}`;
+const fmtTime = d=>(d instanceof Date?d:new Date(d)).toLocaleTimeString('es',{hour:'2-digit',minute:'2-digit'});
+const fmtDate = s=>new Date(s).toLocaleString('es',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
+function toast(msg){const t=document.createElement('div');t.className='toast';t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),2400);}
+
+function hasDeep(){return !!(KEYS.gemini||KEYS.github);}
+
+// ── INIT ──
+// ── INIT SEPARADO EN FASES ──
+async function earlyAck(){
+  // Fase 1: ACK temprano — antes de que bootloader juzgue el estado
+  const earlyStatus = await DB.getMeta('boot_status');
+  const earlyBuildId = await DB.getMeta('pending_build_id');
+  if(earlyStatus === 'booting-new-build' && earlyBuildId){
+    await DB.setMeta('build_runtime_ack', earlyBuildId);
+  }
+}
+
+async function runBootloader(){
+  // Fase 2: bootloader con la información ya completa
+  return await bootloader();
+}
+
+async function initApp(){
+  // Fase 3: inicializar la aplicación
+  S.memories = await DB.getMems();
+  await loadChats();
+  bindEvents();
+  if(!hasDeep()) document.getElementById('mDeep').disabled=true;
+}
+
+window.onload = async()=>{
+  await earlyAck();           // 1. ACK antes de juzgar
+  const booted = await runBootloader(); // 2. bootloader
+  if(booted) return;          // 3. si recargó, parar
+
+  // Si no hay keys, mostrar pantalla de configuración
+  if(!KEYS.groq){
+    showKeySetup();
+    return;
+  }
+  await initApp();
+};
+
+function showKeySetup(){
+  const overlay = document.createElement('div');
+  overlay.id = 'keySetup';
+  overlay.style.cssText = 'position:fixed;inset:0;background:#06060a;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px;z-index:999;gap:0';
+  overlay.innerHTML = `
+    <div style="font-family:Cormorant Garamond,serif;font-size:52px;font-weight:700;color:#c8a97e;margin-bottom:4px">Ailari</div>
+    <div style="font-family:DM Mono,monospace;font-size:10px;color:#6a6a7e;letter-spacing:3px;text-transform:uppercase;margin-bottom:32px">sistema cognitivo · v4.2</div>
+    <div style="font-size:10px;text-transform:uppercase;letter-spacing:2px;color:#6a6a7e;margin-bottom:6px;width:100%">Groq API Key <span style="color:#c8a97e;font-size:9px">★ requerida</span></div>
+    <input id="setupGroq" type="password" placeholder="gsk_..." style="width:100%;background:#0e0e14;border:1px solid #1c1c28;color:#ddd8d0;padding:12px 16px;border-radius:12px;font-family:DM Mono,monospace;font-size:12px;outline:none;margin-bottom:14px">
+    <div style="font-size:10px;text-transform:uppercase;letter-spacing:2px;color:#6a6a7e;margin-bottom:6px;width:100%">Gemini API Key <span style="color:#4a4a5e;font-size:9px">opcional</span></div>
+    <input id="setupGemini" type="password" placeholder="AIza..." style="width:100%;background:#0e0e14;border:1px solid #1c1c28;color:#ddd8d0;padding:12px 16px;border-radius:12px;font-family:DM Mono,monospace;font-size:12px;outline:none;margin-bottom:14px">
+    <div style="font-size:10px;text-transform:uppercase;letter-spacing:2px;color:#6a6a7e;margin-bottom:6px;width:100%">GitHub Token <span style="color:#4a4a5e;font-size:9px">opcional</span></div>
+    <input id="setupGithub" type="password" placeholder="ghp_..." style="width:100%;background:#0e0e14;border:1px solid #1c1c28;color:#ddd8d0;padding:12px 16px;border-radius:12px;font-family:DM Mono,monospace;font-size:12px;outline:none;margin-bottom:6px">
+    <div style="font-size:10px;color:#4a4a5e;margin-bottom:20px;line-height:1.5">Las keys se guardan solo en tu dispositivo.<br>No se suben a ningún servidor.</div>
+    <button id="setupConfirm" style="width:100%;background:transparent;border:1px solid #c8a97e;color:#c8a97e;padding:13px;border-radius:12px;font-family:Cormorant Garamond,serif;font-size:18px;font-weight:600;cursor:pointer">Iniciar Ailari →</button>
+  `;
+  document.body.appendChild(overlay);
+  document.getElementById('setupConfirm').addEventListener('click', async()=>{
+    const groq   = document.getElementById('setupGroq').value.trim();
+    const gemini = document.getElementById('setupGemini').value.trim();
+    const github = document.getElementById('setupGithub').value.trim();
+    if(!groq){ alert('Groq API Key es requerida.'); return; }
+    const btn = document.getElementById('setupConfirm');
+    btn.textContent = 'Verificando...'; btn.disabled = true;
+    // Verificar Groq
+    try{
+      const r = await fetch('https://api.groq.com/openai/v1/chat/completions',{
+        method:'POST',
+        headers:{'Content-Type':'application/json','Authorization':'Bearer '+groq},
+        body:JSON.stringify({model:'llama-3.3-70b-versatile',messages:[{role:'user',content:'ok'}],max_tokens:5})
+      });
+      if(!r.ok) throw new Error('Key invalida');
+    }catch(e){ alert('Groq API Key no funciona: '+e.message); btn.textContent='Iniciar Ailari →'; btn.disabled=false; return; }
+    saveKeys({groq, gemini, github});
+    overlay.remove();
+    S.memories = await DB.getMems();
+    await loadChats();
+    bindEvents();
+    if(!hasDeep()) document.getElementById('mDeep').disabled=true;
+  });
+}
+
+function bindEvents(){
+  // Botón modo edición — click: abre panel contexto si OFF, desactiva si ON
+  document.getElementById('editToggle').addEventListener('click',()=>{
+    if(!S.editMode){
+      document.getElementById('editPanel').style.display='flex';
+    } else {
+      S.editMode=false;S.editContext={};
+      const btn=document.getElementById('editToggle');
+      btn.classList.remove('edit-on');btn.textContent='Edit';
+      document.getElementById('box').placeholder='Que necesitas pensar?';
+      toast('Modo edicion desactivado');
+    }
+  });
+  document.getElementById('menuBtn').addEventListener('click',showMenu);
+  document.getElementById('tabChat').addEventListener('click',()=>goTab('chat'));
+  document.getElementById('tabMem').addEventListener('click',()=>goTab('mem'));
+  document.getElementById('mAuto').addEventListener('click',()=>setMode(null));
+  document.getElementById('mDeep').addEventListener('click',()=>setMode('deep'));
+  document.getElementById('mFast').addEventListener('click',()=>setMode('fast'));
+  const box=document.getElementById('box');
+  box.addEventListener('input',()=>{box.style.height='auto';box.style.height=Math.min(box.scrollHeight,130)+'px';});
+  box.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMsg();}});
+  document.getElementById('snd').addEventListener('click',sendMsg);
+  // Micrófono
+  const micBtn=document.getElementById('micBtn');
+  const SpeechRec=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(SpeechRec){
+    const rec=new SpeechRec();
+    rec.lang='es-ES';rec.continuous=false;rec.interimResults=false;
+    let recording=false;
+    micBtn.addEventListener('click',()=>{
+      if(recording){rec.stop();return;}
+      rec.start();recording=true;micBtn.classList.add('recording');
+    });
+    rec.onresult=e=>{
+      const txt=e.results[0][0].transcript;
+      document.getElementById('box').value=txt;
+      document.getElementById('box').dispatchEvent(new Event('input'));
+    };
+    rec.onend=()=>{recording=false;micBtn.classList.remove('recording');};
+    rec.onerror=()=>{recording=false;micBtn.classList.remove('recording');toast('Micrófono no disponible');};
+  } else {
+    micBtn.style.display='none';
+  }
+  document.getElementById('modalCancel').addEventListener('click',()=>closeModal());
+  document.getElementById('modalConfirm').addEventListener('click',confirmSave);
+  document.getElementById('exportBtn').addEventListener('click',()=>exportData(false));
+  document.getElementById('exportFullBtn').addEventListener('click',()=>exportData(true));
+  document.getElementById('importBtn').addEventListener('click',()=>document.getElementById('importFile').click());
+  document.getElementById('importFile').addEventListener('change',importData);
+
+  // ── IMAGEN ──
+  document.getElementById('imgBtn').addEventListener('click',()=>document.getElementById('imgFileInput').click());
+  document.getElementById('imgFileInput').addEventListener('change',async(e)=>{
+    const file=e.target.files?.[0];if(!file)return;
+    // Preview en el chat
+    const reader=new FileReader();
+    reader.onload=async(ev)=>{
+      const dataUrl=ev.target.result;
+      // Mostrar burbuja con imagen
+      clearEmpty();
+      const d=document.createElement('div');d.className='msg user';
+      d.innerHTML='<div class="bubble"><img src="'+dataUrl+'" style="max-width:100%;border-radius:8px"><div style="font-size:11px;color:var(--mut2);margin-top:4px">'+esc(file.name)+'</div></div><div class="msg-meta">'+fmtTime(new Date())+'</div>';
+      document.getElementById('msgs').appendChild(d);
+      scrollBottom();
+      // Analizar con Groq visión (si está disponible) o describir
+      addThinking();
+      try{
+        // Enviar a Groq con imagen en base64
+        const base64=dataUrl.split(',')[1];
+        const mediaType=file.type||'image/jpeg';
+        const res=await fetch('https://api.groq.com/openai/v1/chat/completions',{
+          method:'POST',
+          headers:{'Content-Type':'application/json','Authorization':'Bearer '+KEYS.groq},
+          body:JSON.stringify({
+            model:'meta-llama/llama-4-scout-17b-16e-instruct',
+            messages:[{role:'user',content:[
+              {type:'image_url',image_url:{url:'data:'+mediaType+';base64,'+base64}},
+              {type:'text',text:buildSystem([])+'\n\nAnaliza esta imagen en el contexto de la clinica dental o negocio de Diego. Describe que ves y que decision o accion sugiere.'}
+            ]}],
+            max_tokens:600
+          })
+        });
+        const d2=await res.json();
+        removeThinking();
+        const texto=d2?.choices?.[0]?.message?.content||'No pude analizar la imagen.';
+        const id=genId();
+        const row={id,mensaje:'[imagen: '+file.name+']',respuesta:texto,modo:'fast',ia:'groq-vision',created_at:new Date().toISOString()};
+        msgData.set(id,row);await DB.putChat(row);
+        appendAIBubble(texto,'fast',id,'groq-vision',new Date(),false,false);
+        scrollBottom();
+      }catch(err){
+        removeThinking();
+        addError('No se pudo analizar la imagen: '+err.message);
+      }
+    };
+    reader.readAsDataURL(file);
+    e.target.value='';
+  });
+
+  // ── PANEL EDICIÓN ──
+  document.getElementById('editToggle').addEventListener('dblclick',()=>{
+    document.getElementById('editPanel').style.display='flex';
+  });
+  document.getElementById('editPanelClose').addEventListener('click',()=>{
+    document.getElementById('editPanel').style.display='none';
+  });
+  document.getElementById('editPanel').addEventListener('click',(e)=>{
+    if(e.target.id==='editPanel') document.getElementById('editPanel').style.display='none';
+  });
+  document.getElementById('loadCodeFile').addEventListener('click',()=>{
+    document.getElementById('codeFileInput').click();
+  });
+  document.getElementById('codeFileInput').addEventListener('change',async(e)=>{
+    const file=e.target.files?.[0];if(!file)return;
+    const text=await file.text();
+    document.getElementById('editCodeCtx').value=text;
+    document.getElementById('editFileName').value=file.name;
+    e.target.value='';
+    toast('Archivo cargado: '+file.name);
+  });
+  document.getElementById('editPanelConfirm').addEventListener('click',()=>{
+    S.editContext={
+      fileName:document.getElementById('editFileName').value.trim(),
+      codeCtx:document.getElementById('editCodeCtx').value.trim(),
+      section:document.getElementById('editSection').value.trim()
+    };
+    S.editMode=true;
+    const btn=document.getElementById('editToggle');
+    btn.classList.add('edit-on');btn.textContent='Edit ON';
+    document.getElementById('editPanel').style.display='none';
+    document.getElementById('box').placeholder='Describe el cambio en '+(S.editContext.fileName||'el archivo')+'...';
+    toast('Contexto cargado — describe el cambio');
+  });
+
+  // ── PANEL PARCHE ──
+  document.getElementById('patchPanelClose').addEventListener('click',()=>{
+    document.getElementById('patchPanel').style.display='none';
+  });
+  document.getElementById('patchPanel').addEventListener('click',(e)=>{
+    if(e.target.id==='patchPanel') document.getElementById('patchPanel').style.display='none';
+  });
+  document.getElementById('patchCopy').addEventListener('click',()=>{
+    const code=document.getElementById('patchCode').value;
+    const el=document.createElement('textarea');
+    el.value=code;el.style.position='fixed';el.style.opacity='0';
+    document.body.appendChild(el);el.select();
+    try{document.execCommand('copy');toast('Codigo copiado');}
+    catch{toast('No se pudo copiar');}
+    document.body.removeChild(el);
+  });
+  document.getElementById('patchApply').addEventListener('click',async()=>{
+    const code = document.getElementById('patchCode').value.trim();
+    if(!code){ toast('No hay codigo para aplicar'); return; }
+    if(!confirm('Aplicar este cambio y reiniciar Ailari?')) return;
+    document.getElementById('patchPanel').style.display='none';
+    // El codigo del patch va dentro del HTML completo actual
+    // Reemplazar el bloque correspondiente en el HTML actual
+    const currentHtml = document.documentElement.outerHTML;
+    // Por ahora: si el codigo es HTML completo, usarlo directo
+    // Si es un bloque parcial, insertarlo en la posicion correcta segun UBICAR
+    const isFullHtml = code.trim().startsWith('<!DOCTYPE') || code.trim().startsWith('<html');
+    if(isFullHtml){
+      // BUILD COMPLETA: aplicar directamente
+      document.getElementById('patchPanel').style.display='none';
+      await applyBuild(code);
+    } else {
+      // PARCHE PARCIAL: guardar y notificar con instrucciones
+      const patch = {id:genId(), codigo:code, status:'pending', created_at:new Date().toISOString()};
+      await DB.putPatch(patch);
+      // Mostrar diferencia visual clara
+      const notice = document.getElementById('patchNotice');
+      if(notice){
+        notice.style.cssText='background:rgba(232,184,75,.1);border:1px solid var(--warn);border-radius:10px;padding:12px 14px;font-size:12px;color:var(--warn);line-height:1.6;margin-top:4px';
+        notice.innerHTML='<strong>Parche parcial guardado.</strong><br>Descarga el archivo y reemplaza el bloque indicado en UBICAR dentro de index.html.';
+      }
+      toast('Parche parcial guardado — ver instrucciones en el panel');
+    }
+  });
+
+  document.getElementById('patchRestore').addEventListener('click',async()=>{
+    if(!confirm('Restaurar la ultima build estable? Ailari se reiniciara.')) return;
+    document.getElementById('patchPanel').style.display='none';
+    await restoreStable();
+  });
+
+  document.getElementById('patchDownload').addEventListener('click',()=>{
+    const code=document.getElementById('patchCode').value;
+    const blob=new Blob([code],{type:'text/plain;charset=utf-8'});
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(blob);
+    a.download='ailari_patch_'+Date.now()+'.txt';
+    document.body.appendChild(a);a.click();a.remove();
+    URL.revokeObjectURL(a.href);
+    toast('Descargado');
+  });
+}
+
+async function showMenu(){
+  const c=prompt('1. Cambiar API keys\n2. Limpiar chats y memoria\n3. Resetear sistema completo (borra builds)\n\nEscribe 1, 2 o 3:');
+  if(c==='1'){
+    localStorage.removeItem('ailari_key_groq');
+    localStorage.removeItem('ailari_key_gemini');
+    localStorage.removeItem('ailari_key_github');
+    showKeySetup();
+    return;
+  }
+  if(c==='2'&&confirm('Borrar chats y memoria. Las builds y configuracion del sistema se conservan.')){
+    await DB.clearConversations();
+    S.chatHistory=[];S.memories=[];
+    document.getElementById('msgs').innerHTML=emptyHTML();
+    toast('Chats y memoria limpiados. Builds conservadas.');
+  }
+  if(c==='3'&&confirm('ADVERTENCIA: Esto borra TODO incluyendo builds y configuracion del sistema. No hay vuelta atras.')){
+    if(confirm('Confirmar reset completo del sistema?')){
+      await DB.clearAll();
+      S.chatHistory=[];S.memories=[];
+      document.getElementById('msgs').innerHTML=emptyHTML();
+      toast('Sistema reseteado completamente.');
+    }
+  }
+}
+
+// ── TABS & MODE ──
+function goTab(t){
+  document.getElementById('tabChat').classList.toggle('on',t==='chat');
+  document.getElementById('tabMem').classList.toggle('on',t==='mem');
+  document.getElementById('chatPane').style.display=t==='chat'?'flex':'none';
+  const mp=document.getElementById('memPane');
+  if(t==='mem'){mp.classList.add('on');mp.style.display='flex';loadMemUI();}
+  else{mp.classList.remove('on');mp.style.display='none';}
+}
+function setMode(m){
+  S.mode=m;
+  document.getElementById('mAuto').className='mtbtn'+(m===null?' on':'');
+  document.getElementById('mDeep').className='mtbtn'+(m==='deep'?' deep-on':'');
+  document.getElementById('mFast').className='mtbtn'+(m==='fast'?' fast-on':'');
+  if(!hasDeep()) document.getElementById('mDeep').disabled=true;
+  const pill=document.getElementById('mpill');
+  pill.textContent=m==='deep'?'profundo':m==='fast'?'rápido':'auto';
+  pill.className='mpill'+(m==='deep'?' deep':'');
+}
+
+// ── API ──
+async function safeJson(res){
+  const text=await res.text();
+  try{return JSON.parse(text);}
+  catch{throw new Error(`Respuesta inválida del servidor`);}
+}
+
+async function callGroq(messages){
+  const res=await fetch('https://api.groq.com/openai/v1/chat/completions',{
+    method:'POST',
+    headers:{'Content-Type':'application/json','Authorization':`Bearer ${KEYS.groq}`},
+    body:JSON.stringify({model:'llama-3.3-70b-versatile',messages,max_tokens:1200})
+  });
+  const d=await safeJson(res);
+  if(!res.ok)throw new Error(d.error?.message||`Error ${res.status}`);
+  const text=d?.choices?.[0]?.message?.content;
+  if(!text)throw new Error('Groq: respuesta vacía');
+  return text;
+}
+
+async function callGemini(prompt){
+  if(!KEYS.gemini)throw new Error('Sin Gemini key');
+  const res=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${KEYS.gemini}`,{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({contents:[{parts:[{text:prompt}]}],generationConfig:{maxOutputTokens:500}})
+  });
+  const d=await safeJson(res);
+  if(!res.ok)throw new Error(d.error?.message||`Gemini error ${res.status}`);
+  const text=d?.candidates?.[0]?.content?.parts?.[0]?.text;
+  if(!text)throw new Error('Gemini: respuesta vacía');
+  return text;
+}
+
+async function callGitHub(prompt){
+  if(!KEYS.github)throw new Error('Sin GitHub key');
+  const res=await fetch('https://models.inference.ai.azure.com/chat/completions',{
+    method:'POST',
+    headers:{'Content-Type':'application/json','Authorization':`Bearer ${KEYS.github}`},
+    body:JSON.stringify({model:'gpt-4o-mini',messages:[{role:'user',content:prompt}],max_tokens:500})
+  });
+  const d=await safeJson(res);
+  if(!res.ok)throw new Error(d.error?.message||`GitHub error ${res.status}`);
+  const text=d?.choices?.[0]?.message?.content;
+  if(!text)throw new Error('GitHub: respuesta vacía');
+  return text;
+}
+
+async function callBest(rol,prompt,groqMsgs){
+  const orden={
+    generador:['groq','github','gemini'],
+    critico:['gemini','github','groq'],
+    sintetizador:['github','groq','gemini'],
+    rapido:['groq','github','gemini']
+  };
+  for(const ia of (orden[rol]||orden.rapido)){
+    if(ia==='groq'&&!KEYS.groq)continue;
+    if(ia==='gemini'&&!KEYS.gemini)continue;
+    if(ia==='github'&&!KEYS.github)continue;
+    try{
+      if(ia==='groq')return{texto:await callGroq(groqMsgs||[{role:'user',content:prompt}]),ia:'groq'};
+      if(ia==='gemini')return{texto:await callGemini(prompt),ia:'gemini'};
+      if(ia==='github')return{texto:await callGitHub(prompt),ia:'github'};
+    }catch(e){console.warn(`${ia} falló:`,e.message);}
+  }
+  throw new Error('No hay IAs disponibles. Revisa tu conexión.');
+}
+
+// ── MEMORIA ──
+function norm(s=''){return s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9\s]/g,' ');}
+function searchMemory(query){
+  const words=norm(query).split(/\s+/).filter(w=>w.length>3);
+  if(!words.length||!S.memories.length)return[];
+  return S.memories
+    .map(m=>{
+      const tags=Array.isArray(m.tags)?m.tags:JSON.parse(m.tags||'[]');
+      const hay=norm(m.texto+' '+tags.join(' '));
+      const score=words.filter(w=>hay.includes(w)).length;
+      return{...m,score};
+    })
+    .filter(m=>m.score>0)
+    .sort((a,b)=>b.score-a.score)
+    .slice(0,2);
+}
+function buildSystem(memCtx, editMode=false){
+  const mem=memCtx.length?'\nMemoria relevante:\n'+memCtx.map(m=>'- '+m.texto.slice(0,120)).join('\n'):'';
+  if(editMode){
+    const ctx=S.editContext||{};
+    let editPrompt='Eres Ailari en MODO EDICION. Responde SIEMPRE en este formato, sin excepciones:\n\nCAMBIO: [que se modifica en una linea]\nARCHIVO: [nombre del archivo]\nUBICAR: [funcion o seccion exacta]\nCODIGO:\n[bloque completo limpio, listo para copiar]\nINSTRUCCION: [reemplaza / agrega despues de / elimina]\n\nReglas absolutas: Sin prosa. Sin explicaciones. Un cambio por vez.';
+    if(ctx.fileName) editPrompt+='\n\nArchivo activo: '+ctx.fileName;
+    if(ctx.section) editPrompt+='\nSeccion objetivo: '+ctx.section;
+    if(ctx.codeCtx) editPrompt+='\n\nCodigo actual del bloque:\n'+ctx.codeCtx.slice(0,2000);
+    return editPrompt;
+  }
+  return 'Eres '+CORE.nombre+'. '+CORE.proposito+'\nTono: '+CORE.tono+'\nReglas: '+CORE.reglas+'\nContexto: '+CORE.contexto+mem+'\nResponde en espanol. Sin markdown, sin asteriscos, sin negritas. Texto plano. Especifico para clinica dental. Termina con: Lo que tienes que hacer ahora: [3 acciones concretas]';
+}
+
+
+// ── UI HELPERS ──
+const emptyHTML=()=>'<div class="empty" id="emptyState"><div class="empty-name">Ailari</div><div class="empty-desc">Tu sistema cognitivo esta listo.<br>Escribeme lo que necesitas pensar o decidir.</div></div>';
+function clearEmpty(){document.getElementById('emptyState')?.remove();}
+function scrollBottom(){const m=document.getElementById('msgs');requestAnimationFrame(()=>m.scrollTo({top:m.scrollHeight,behavior:'smooth'}));}
+
+function appendUserBubble(text,date=new Date()){
+  clearEmpty();
+  const d=document.createElement('div');d.className='msg user';
+  d.innerHTML='<div class="bubble">'+esc(text)+'</div><div class="msg-meta">'+fmtTime(date)+'</div>';
+  document.getElementById('msgs').appendChild(d);
+}
+
+function appendAIBubble(text,mode,id,ia,date=new Date(),historical=false,isEdit=false){
+  const d=document.createElement('div');d.className='msg ai';d.dataset.id=id;
+  const deepBadge=mode==='deep'?'<span class="mbadge deep">profundo</span>':'';
+  const iaBadge=ia?'<span class="mbadge ia">'+esc(ia)+'</span>':'';
+  const canDeep=!historical&&mode!=='deep'&&hasDeep();
+  const bubble=isEdit?'<div class="bubble" style="font-family:DM Mono,monospace;font-size:12px;white-space:pre-wrap">'+esc(text)+'</div>':'<div class="bubble"><p>'+fmt(text)+'</p></div>';
+  d.innerHTML=bubble+
+    '<div class="bubble-actions">'+
+    '<button class="bact" data-id="'+id+'" data-action="copy" title="Copiar"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button>'+
+    '<button class="bact" data-id="'+id+'" data-action="speak" title="Escuchar"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg></button>'+
+    '<button class="bact" data-id="'+id+'" data-action="share" title="Compartir"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg></button>'+
+    '<button class="bact" data-id="'+id+'" data-action="save" title="Guardar"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg></button>'+
+    '<button class="bact" data-id="'+id+'" data-action="decide" title="Decision"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></button>'+
+    (canDeep?'<button class="bact" data-id="'+id+'" data-action="deep" title="Profundo"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></button>':'')+
+    (isEdit?'<button class="bact" data-id="'+id+'" data-action="patch" title="Aplicar cambio" style="border-color:var(--ok);color:var(--ok)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>':'')+
+    '<button class="bact" data-id="'+id+'" data-action="like" title="Util"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3H14z"/><path d="M7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg></button>'+
+    '<button class="bact" data-id="'+id+'" data-action="dislike" title="No util"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3H10z"/><path d="M17 2h2.67A2.31 2.31 0 0 1 22 4v7a2.31 2.31 0 0 1-2.33 2H17"/></svg></button>'+
+    '</div>'+
+    '<div class="msg-meta">'+fmtTime(date)+' '+deepBadge+iaBadge+'</div>';
+  d.querySelectorAll('.bact').forEach(btn=>btn.addEventListener('click',handleBubbleAction));
+  d.addEventListener('click',()=>{document.querySelectorAll('.msg.ai').forEach(m=>m.classList.remove('active'));d.classList.add('active');});
+  document.getElementById('msgs').appendChild(d);
+}
+
+function handleBubbleAction(e){
+  e.stopPropagation();
+  const btn=e.currentTarget,action=btn.dataset.action,id=btn.dataset.id;
+  const data=msgData.get(id);
+  if(!data)return;
+  if(action==='copy'){
+    const el=document.createElement('textarea');el.value=data.respuesta;el.style.position='fixed';el.style.opacity='0';
+    document.body.appendChild(el);el.select();
+    try{document.execCommand('copy');toast('Copiado');}catch{toast('No se pudo copiar');}
+    document.body.removeChild(el);
+  }
+  if(action==='speak'){
+    if(window.speechSynthesis.speaking){window.speechSynthesis.cancel();btn.classList.remove('speaking');return;}
+    const utt=new SpeechSynthesisUtterance(data.respuesta);utt.lang='es-ES';
+    utt.onstart=()=>btn.classList.add('speaking');utt.onend=()=>btn.classList.remove('speaking');
+    window.speechSynthesis.speak(utt);
+  }
+  if(action==='share'){navigator.share?navigator.share({text:data.respuesta}).catch(()=>{}):toast('Comparte desde copiar');}
+  if(action==='save')openSaveModal(btn,data.respuesta,id);
+  if(action==='decide')markDecide(btn,id,data.mensaje,data.respuesta);
+  if(action==='deep')goDeep(btn,id,data.mensaje);
+  if(action==='patch'){
+    // Extraer bloque CODIGO de la respuesta
+    const resp=data.respuesta;
+    const codigoMatch=resp.match(/CODIGO[:\s\n]+([\s\S]*?)(?=INSTRUCCION:|$)/i);
+    const codigo=codigoMatch?codigoMatch[1].trim():resp;
+    document.getElementById('patchCode').value=codigo;
+    saveStableBackup().then(()=>toast('Backup guardado'));
+    const pn=document.getElementById('patchNotice');
+    if(pn){pn.innerHTML='';pn.style.cssText='font-size:11px;color:var(--mut);line-height:1.6';}
+    document.getElementById('patchPanel').style.display='flex';
+  }
+  if(action==='like'){btn.classList.toggle('liked');toast('Util registrado');}
+  if(action==='dislike'){btn.classList.toggle('disliked');toast('Registrado');}
+}
+
+function addThinking(){
+  const d=document.createElement('div');d.className='msg ai';d.id='thinking';
+  d.innerHTML='<div class="thinking-b"><div class="tdots"><span></span><span></span><span></span></div><span>Pensando...</span></div>';
+  document.getElementById('msgs').appendChild(d);scrollBottom();
+}
+function removeThinking(){document.getElementById('thinking')?.remove();}
+function addError(msg){removeThinking();const d=document.createElement('div');d.innerHTML='<div class="err-b">Error: '+esc(msg)+'</div>';document.getElementById('msgs').appendChild(d);scrollBottom();}
+
+async function loadChats(){
+  const chats=await DB.getChats();
+  if(!chats.length)return;
+  clearEmpty();
+  chats.slice(0,10).reverse().forEach(c=>{
+    appendUserBubble(c.mensaje,new Date(c.created_at));
+    if(c.respuesta)appendAIBubble(c.respuesta,c.modo,c.id,c.ia||'groq',new Date(c.created_at),true,false);
+    msgData.set(c.id,c);
+  });
+  S.chatHistory=chats.slice(0,6).reverse().flatMap(c=>[{role:'user',content:c.mensaje},{role:'assistant',content:c.respuesta||''}]).filter(h=>h.content);
+  scrollBottom();
+}
+
+async function sendMsg(){
+  const text=document.getElementById('box').value.trim();
+  if(!text)return;
+  const btn=document.getElementById('snd');
+  btn.disabled=true;document.getElementById('sdot').className='sdot busy';
+  appendUserBubble(text);
+  document.getElementById('box').value='';document.getElementById('box').style.height='auto';
+  addThinking();
+  const isEditMsg=CORE.trigger_edit.some(t=>text.toLowerCase().includes(t));
+  if(isEditMsg&&!S.editMode){S.editMode=true;const et=document.getElementById('editToggle');if(et){et.classList.add('edit-on');et.textContent='Edit ON';}}
+  const memCtx=searchMemory(text);
+  const system=buildSystem(memCtx,S.editMode);
+  const isDeep=S.mode==='deep'||(S.mode!=='fast'&&CORE.trigger_deep.some(t=>text.toLowerCase().includes(t)));
+  const mode=(isDeep&&hasDeep())?'deep':'fast';
+  const id=genId();
+  let response='',iaUsada='groq';
+  try{
+    if(mode==='fast'){
+      const msgs=[{role:'system',content:system},...S.chatHistory.slice(-6),{role:'user',content:text}];
+      const r=await callBest('rapido',text,msgs);response=r.texto;iaUsada=r.ia;
+    }else{
+      const gen=await callBest('generador',system+'\n\nPregunta: '+text,[{role:'user',content:system+'\n\nPregunta: '+text}]);
+      const crit=await callBest('critico','Detecta errores y riesgos:\n'+gen.texto,[{role:'user',content:'Detecta errores:\n'+gen.texto}]);
+      const synth=await callBest('sintetizador','Pregunta: '+text+'\nRespuesta: '+gen.texto+'\nCritica: '+crit.texto+'\nVersion final:',[{role:'user',content:'Pregunta: '+text+'\nVersion final de: '+gen.texto}]);
+      response=synth.texto;iaUsada=gen.ia+'->'+crit.ia+'->'+synth.ia;
+    }
+  }catch(e){addError(e.message);btn.disabled=false;document.getElementById('sdot').className='sdot';return;}
+  removeThinking();
+  const row={id,mensaje:text,respuesta:response,modo:mode,ia:iaUsada,created_at:new Date().toISOString()};
+  msgData.set(id,row);await DB.putChat(row);
+  appendAIBubble(response,mode,id,iaUsada,new Date(),false,S.editMode);
+  S.chatHistory.push({role:'user',content:text},{role:'assistant',content:response});
+  if(S.chatHistory.length>16)S.chatHistory=S.chatHistory.slice(-16);
+  const pill=document.getElementById('mpill');
+  pill.textContent=mode==='deep'?'profundo':'auto';pill.className='mpill'+(mode==='deep'?' deep':'');
+  // editMode persiste hasta toggle manual
+  document.getElementById('box').placeholder='Que necesitas pensar?';
+  scrollBottom();btn.disabled=false;document.getElementById('sdot').className='sdot';
+}
+
+async function goDeep(btn,id,userMsg){
+  btn.disabled=true;
+  const note=document.createElement('div');note.className='msg ai';
+  note.innerHTML='<div class="thinking-b" style="color:var(--deep);border-color:var(--deep)">Analizando en profundidad...</div>';
+  document.getElementById('msgs').appendChild(note);scrollBottom();
+  try{
+    const memCtx=searchMemory(userMsg),system=buildSystem(memCtx,false);
+    const histSin=S.chatHistory.filter(h=>!(h.role==='user'&&h.content===userMsg)).slice(-6);
+    const gen=await callBest('generador',system+'\n\nPregunta: '+userMsg,histSin.concat([{role:'user',content:userMsg}]));
+    const crit=await callBest('critico','Detecta errores:\n'+gen.texto,[{role:'user',content:'Detecta errores:\n'+gen.texto}]);
+    const synth=await callBest('sintetizador','Pregunta: '+userMsg+'\nRespuesta: '+gen.texto+'\nCritica: '+crit.texto+'\nVersion final:',[{role:'user',content:'Version final.'}]);
+    note.remove();
+    const newId=genId();
+    const row={id:newId,mensaje:userMsg,respuesta:synth.texto,modo:'deep',ia:gen.ia+'->'+crit.ia+'->'+synth.ia,created_at:new Date().toISOString()};
+    msgData.set(newId,row);await DB.putChat(row);
+    appendAIBubble(synth.texto,'deep',newId,row.ia,new Date(),false,false);
+    S.chatHistory.push({role:'assistant',content:synth.texto});
+    if(S.chatHistory.length>16)S.chatHistory=S.chatHistory.slice(-16);
+    scrollBottom();
+  }catch(e){note.remove();addError(e.message);}
+  btn.disabled=false;
+}
+
+async function markDecide(btn,id,userMsg,aiResp){
+  btn.disabled=true;
+  const row={id:genId(),texto:aiResp.slice(0,300),tags:JSON.stringify(['decision']),tipo:'decision',pregunta:userMsg,chat_id:id,created_at:new Date().toISOString()};
+  S.memories.unshift(row);await DB.putMem(row);
+  btn.classList.add('liked');toast('Decision guardada');
+}
+
+function openSaveModal(btn,text,id){
+  S.pendingSave={texto:text,chatId:id,btn};
+  document.getElementById('memText').value=text.slice(0,300);
+  document.getElementById('memTags').value='';
+  document.getElementById('moverlay').classList.add('open');
+  setTimeout(()=>document.getElementById('memText').focus(),150);
+}
+function closeModal(e){if(!e||e.target===document.getElementById('moverlay'))document.getElementById('moverlay').classList.remove('open');}
+async function confirmSave(){
+  const texto=document.getElementById('memText').value.trim();
+  const tags=document.getElementById('memTags').value.split(',').map(t=>t.trim()).filter(Boolean);
+  if(!texto)return;
+  const row={id:genId(),texto,tags:JSON.stringify(tags),tipo:'aprendizaje',chat_id:S.pendingSave.chatId,created_at:new Date().toISOString()};
+  S.memories.unshift(row);await DB.putMem(row);
+  document.getElementById('moverlay').classList.remove('open');
+  if(S.pendingSave.btn)S.pendingSave.btn.classList.add('liked');
+  toast('Guardado en memoria');
+}
+
+async function loadMemUI(){
+  S.memories=await DB.getMems();
+  const pane=document.getElementById('memList');pane.innerHTML='';
+  // Mostrar builds si existen
+  const builds=await DB.getBuilds();
+  const activeBuildId=await getCurrentBuildId();
+  const stableBuildId=await getStableBuildId();
+  if(builds.length){
+    const bsec=document.createElement('div');
+    bsec.innerHTML='<div style="font-family:DM Mono,monospace;font-size:9px;text-transform:uppercase;letter-spacing:2px;color:var(--deep);margin-bottom:8px;margin-top:4px">Builds ('+builds.length+')</div>';
+    builds.slice(0,5).forEach(b=>{
+      const isActive=b.id===activeBuildId, isStable=b.id===stableBuildId;
+      const bc=document.createElement('div');
+      bc.style.cssText='background:var(--sur);border:1px solid '+(isActive?'var(--deep)':isStable?'var(--ok)':'var(--bor)')+';border-radius:10px;padding:10px 12px;margin-bottom:6px;display:flex;align-items:center;justify-content:space-between';
+      const label=isActive?'● activa':isStable?'◆ estable':'';
+      const color=isActive?'var(--deep)':isStable?'var(--ok)':'var(--text)';
+      const fecha=new Date(b.created_at).toLocaleString('es',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
+      bc.innerHTML='<div><div style="font-family:DM Mono,monospace;font-size:11px;color:'+color+'">v'+b.version+' '+label+'</div><div style="font-size:10px;color:var(--mut)">'+fecha+'</div></div>';
+      if(!isStable&&!isActive){
+        const rb=document.createElement('button');
+        rb.textContent='→ estable';
+        rb.style.cssText='font-size:9px;font-family:DM Mono,monospace;padding:3px 8px;border-radius:6px;border:1px solid var(--ok);background:transparent;color:var(--ok);cursor:pointer';
+        rb.addEventListener('click',async()=>{
+          await markStable(b.id);
+          toast('Marcada como estable');
+          loadMemUI();
+        });
+        bc.appendChild(rb);
+      }
+      bsec.appendChild(bc);
+    });
+    pane.appendChild(bsec);
+  }
+  if(!S.memories.length){pane.innerHTML+='<div class="mempty">Sin memoria guardada aun.</div>';return;}
+  S.memories.forEach(m=>{
+    const tags=Array.isArray(m.tags)?m.tags:JSON.parse(m.tags||'[]');
+    const c=document.createElement('div');c.className='mcard';
+    c.innerHTML='<div class="mcard-tipo '+(m.tipo==='decision'?'decision':'')+'">'+(m.tipo||'aprendizaje')+'</div>'+
+      '<div class="mcard-text">'+esc(m.texto)+'</div>'+
+      '<div class="mcard-meta"><span class="mcard-date">'+fmtDate(m.created_at)+'</span>'+
+      '<div class="mcard-tags">'+tags.map(t=>'<span class="mtag">'+esc(t)+'</span>').join('')+'</div></div>';
+    pane.appendChild(c);
+  });
+}
+
+// ── SISTEMA DE BUILDS ──
+
+async function getCurrentBuildId(){
+  return await DB.getMeta('active_build_id') || null;
+}
+
+async function getStableBuildId(){
+  return await DB.getMeta('stable_build_id') || null;
+}
+
+async function saveBuild(options={}){
+  const id = 'build_' + Date.now();
+  const version = options.version || await getNextVersion();
+  const status = options.status || 'draft';
+  const html = options.codigo || document.documentElement.outerHTML;
+  const build = {
+    id,
+    version,
+    status,
+    codigo: html,
+    size: html.length,
+    descripcion: options.descripcion || '',
+    created_at: new Date().toISOString()
+  };
+  await DB.putBuild(build);
+  return build;
+}
+
+async function getNextVersion(){
+  const builds = await DB.getBuilds();
+  if(!builds.length) return '1.0.0';
+  const last = builds[0].version || '1.0.0';
+  const parts = last.split('.').map(Number);
+  parts[2] = (parts[2]||0) + 1;
+  return parts.join('.');
+}
+
+async function activateBuild(buildId){
+  const prev = await getCurrentBuildId();
+  if(prev) await DB.setMeta('prev_build_id', prev);
+  await DB.setMeta('active_build_id', buildId);
+}
+
+async function markStable(buildId){
+  await DB.setMeta('stable_build_id', buildId);
+  const build = await DB.getBuild(buildId);
+  if(build){ build.status='stable'; await DB.putBuild(build); }
+}
+
+async function applyBuild(newHtml){
+  // Guardar build actual como backup
+  const stableId = await getStableBuildId();
+  if(!stableId){
+    const stable = await saveBuild({status:'stable', descripcion:'Build estable inicial'});
+    await markStable(stable.id);
+    toast('Build estable guardada: '+stable.version);
+  }
+  // Guardar nueva build con el codigo real
+  const newBuild = await saveBuild({status:'active', descripcion:'Actualización aplicada', codigo:newHtml});
+  await activateBuild(newBuild.id);
+  // Guardar en meta para que el bootloader la cargue al reiniciar
+  await DB.setMeta('pending_html', newHtml);
+  await DB.setMeta('pending_build_id', newBuild.id);
+  await DB.setMeta('boot_status', 'pending-apply');
+  toast('Build '+newBuild.version+' lista. Recargando...');
+  setTimeout(()=>location.reload(), 1200);
+}
+
+async function restoreStable(){
+  const stableId = await getStableBuildId();
+  if(!stableId){ toast('No hay build estable guardada'); return; }
+  const build = await DB.getBuild(stableId);
+  if(!build || !build.codigo){ toast('Build estable no tiene codigo — no se puede restaurar'); return; }
+  // Guardar estado previo para auditoría
+  const currentId = await getCurrentBuildId();
+  if(currentId) await DB.setMeta('prev_build_id', currentId);
+  // Preparar restauración
+  await DB.setMeta('pending_html', build.codigo);
+  await DB.setMeta('pending_build_id', stableId);
+  await DB.setMeta('boot_status', 'restoring');  // bootloader lo maneja distinto a pending-apply
+  toast('Restaurando v'+build.version+'...');
+  setTimeout(()=>location.reload(), 1200);
+}
+
+// BOOTLOADER — máquina de estados con ACK explícito
+// Estados:
+//   'ok'                → arranque normal
+//   'pending-apply'     → hay build esperando ser cargada
+//   'booting-new-build' → nueva build en primer arranque (aún sin ack)
+//   'failed'            → fallo confirmado, hacer rollback
+//   'restoring'         → restauración manual explícita
+//
+// El ACK (build_runtime_ack) lo escribe la NUEVA BUILD al iniciar su propio JS.
+// Solo si ack === pending_build_id se confirma como buena.
+// Sin ack → la build murió antes de ejecutar JS → rollback.
+
+async function bootloader(){
+  const bootStatus = await DB.getMeta('boot_status') || 'ok';
+  const pendingBuildId = await DB.getMeta('pending_build_id');
+
+  // ── CASO: booting-new-build ──
+  // Llegamos aquí en DOS escenarios:
+  // A) La nueva build arrancó bien y ejecutó su JS → dejó build_runtime_ack
+  // B) La nueva build murió → volvimos al index base → no hay ack
+  if(bootStatus === 'booting-new-build'){
+    const runtimeAck = await DB.getMeta('build_runtime_ack');
+    await DB.setMeta('build_runtime_ack', null); // limpiar siempre
+
+    if(runtimeAck && runtimeAck === pendingBuildId){
+      // ✓ ACK válido — la build nueva arrancó desde sí misma y se identificó
+      const prev = await getCurrentBuildId();
+      if(prev) await DB.setMeta('prev_build_id', prev);
+      await DB.setMeta('active_build_id', pendingBuildId);
+      await DB.setMeta('pending_build_id', null);
+      await DB.setMeta('boot_status', 'ok');
+      const build = await DB.getBuild(pendingBuildId);
+      if(build){ build.status='active-confirmed'; await DB.putBuild(build); }
+      return false; // arranque normal con build confirmada
+    } else {
+      // ✗ Sin ACK — la build nueva murió antes de ejecutar JS
+      await DB.setMeta('boot_status', 'failed');
+      await DB.setMeta('pending_build_id', null);
+      // Caer en el caso 'failed' abajo (no return — continúa al siguiente if)
+    }
+  }
+
+  // ── CASO: failed — rollback a build estable ──
+  if(bootStatus === 'failed'){
+    // Marcar la build fallida como tal
+    const failedBuildId = await getCurrentBuildId();
+    if(failedBuildId){
+      const failedBuild = await DB.getBuild(failedBuildId);
+      if(failedBuild){ failedBuild.status='failed'; await DB.putBuild(failedBuild); }
+    }
+    const stableId = await getStableBuildId();
+    if(stableId){
+      const stable = await DB.getBuild(stableId);
+      if(stable && stable.codigo){
+        // Actualizar metadata antes de restaurar
+        if(failedBuildId) await DB.setMeta('prev_build_id', failedBuildId);
+        await DB.setMeta('active_build_id', stableId);
+        await DB.setMeta('build_runtime_ack', null);
+        await DB.setMeta('boot_status', 'ok');
+        stable.status='stable-restored'; await DB.putBuild(stable);
+        toast('Build fallida — restaurando estable automáticamente...');
+        document.open();
+        document.write(stable.codigo);
+        document.close();
+        return true;
+      }
+    }
+    await DB.setMeta('boot_status', 'ok');
+    toast('No hay build estable para restaurar. Continúa con base.');
+    return false;
+  }
+
+  // ── CASO: pending-apply — cargar nueva build ──
+  if(bootStatus === 'pending-apply'){
+    const pendingHtml = await DB.getMeta('pending_html');
+    if(!pendingHtml){
+      await DB.setMeta('boot_status', 'ok');
+      return false;
+    }
+    // Limpiar pending_html ANTES de escribir (evitar loops)
+    await DB.setMeta('pending_html', null);
+    // Estado intermedio — si la nueva build muere, el próximo boot ve 'booting-new-build' sin ack → rollback
+    await DB.setMeta('boot_status', 'booting-new-build');
+    document.open();
+    document.write(pendingHtml);
+    document.close();
+    return true;
+  }
+
+  // ── CASO: restoring — restauración manual ──
+  if(bootStatus === 'restoring'){
+    // Restauración manual: pasar por el mismo mecanismo ACK que una build nueva
+    // NO confirmar active_build_id hasta que la build restaurada arranque su JS
+    const pendingHtml = await DB.getMeta('pending_html');
+    await DB.setMeta('pending_html', null);
+    if(!pendingHtml){
+      await DB.setMeta('boot_status', 'ok');
+      return false;
+    }
+    // Tratar como si fuera una build nueva: booting-new-build + ACK
+    await DB.setMeta('boot_status', 'booting-new-build');
+    // pending_build_id ya está guardado por restoreStable()
+    document.open();
+    document.write(pendingHtml);
+    document.close();
+    return true;
+  }
+
+  // ── CASO NORMAL: ok ──
+  return false;
+}
+
+
+// ── SAVE STABLE BACKUP ──
+async function saveStableBackup(){
+  const currentId = await getCurrentBuildId();
+  const stableId = await getStableBuildId();
+  // Si ya hay una build estable marcada, no sobreescribir
+  if(stableId){
+    const stable = await DB.getBuild(stableId);
+    if(stable && stable.codigo) return stable;
+  }
+  // Guardar build actual como estable
+  const build = await saveBuild({
+    status:'stable',
+    descripcion:'Build estable guardada antes de aplicar parche'
+  });
+  await markStable(build.id);
+  return build;
+}
+
+async function exportData(full=false){
+  const chats=await DB.getChats();
+  const mems=await DB.getMems();
+  const builds=await DB.getBuilds();
+  const patches=await DB.getPatches();
+  const metaKeys=['active_build_id','stable_build_id','boot_status','prev_build_id','pending_build_id'];
+  const meta={};
+  for(const k of metaKeys){const v=await DB.getMeta(k);if(v)meta[k]=v;}
+  const data={
+    version:'4.2',
+    export_type:full?'completo_restaurable':'ligero',
+    exported_at:new Date().toISOString(),
+    chats,
+    memory:mems,
+    builds:full?builds:builds.map(b=>({...b,codigo:'[omitido en export ligero]'})),
+    patches,
+    meta
+  };
+  const suffix=full?'_COMPLETO':'_ligero';
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download='ailari_backup'+suffix+'_'+Date.now()+'.json';a.click();
+  toast(full?'Export completo restaurable':'Export ligero guardado');
+}
+async function exportDataFull(){return exportData(true);}
+
+async function importData(e){
+  const file=e.target.files[0];if(!file)return;
+  try{
+    const data=JSON.parse(await file.text());
+    if(!data.chats&&!data.memory&&!data.builds)throw new Error('Formato invalido');
+    let imported={chats:0,memory:0,builds:0,patches:0};
+    for(const c of(data.chats||[])){if(!c.id)c.id=genId();await DB.putChat(c);imported.chats++;}
+    for(const m of(data.memory||[])){if(!m.id)m.id=genId();await DB.putMem(m);imported.memory++;}
+    for(const b of(data.builds||[])){
+      if(b.codigo&&!b.codigo.startsWith('[omitido')){
+        if(!b.id)b.id=genId();await DB.putBuild(b);imported.builds++;
+      }
+    }
+    for(const p of(data.patches||[])){if(!p.id)p.id=genId();await DB.putPatch(p);imported.patches++;}
+    if(data.meta){
+      const entries=Object.entries(data.meta);
+      for(let i=0;i<entries.length;i++) await DB.setMeta(entries[i][0],entries[i][1]);
+    }
+    const msg='Importado: '+imported.chats+' chats, '+imported.memory+' memorias'
+      +(imported.builds?', '+imported.builds+' builds':'')
+      +(imported.patches?', '+imported.patches+' patches':'');
+    toast(msg);
+    S.memories=await DB.getMems();await loadChats();
+  }catch(err){toast('Error: '+err.message);}
+  e.target.value='';
+}
+</script>
+<script>
+if('serviceWorker' in navigator && location.protocol.startsWith('http')){
+  window.addEventListener('load',()=>{
+    navigator.serviceWorker.register('/Ailari/sw.js')
+      .then(()=>console.log('SW OK'))
+      .catch(()=>console.log('SW: no disponible en este entorno'));
+  });
+}
+</script>
+</body>
+</html>
